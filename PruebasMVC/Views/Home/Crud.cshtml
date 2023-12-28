@@ -1,0 +1,152 @@
+﻿
+@{
+    ViewBag.Title = "Crud";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Panel de administración</h1>
+
+
+<form id="formulario">
+    <div class="mb-3">
+        <label for="nombre">Nombre de usuario:</label>
+        <input type="text" id="nombre" name="nombre" />
+    </div>
+
+    <div class="mb-3">
+        <label for="apellidos">Apellidos</label>
+        <input type="text" id="apellidos" name="apellidos" />
+    </div>
+    
+    <div class="mb-3">
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" name="edad" />
+    </div>
+
+    <div class="mb-3">
+        <label for="fecha">Fecha de registro:</label>
+        <input type="date" id="fecha" name="fecha" />
+    </div>
+    
+    <button type="submit"  class="btn btn-success"> Envíar datos </button>
+</form>
+
+
+<table class="table table-dark mt-4" id="tabla">
+    <thead>
+        <tr class="text-lg-center">
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Edad</th>
+            <th>Fecha de registro</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="tablaBody" class="text-lg-center">
+
+    </tbody>
+</table>
+
+@section scripts{
+    <script>
+        //Cuando se carga el dom
+        $(document).ready(function () {
+            //Carga de funciones
+            cargarDatos();
+
+            //cuando el formulario hace un evento submit
+            $('#formulario').submit(function (event) {
+                //prevenimos su acción por defecto
+                event.preventDefault();
+                //Llenamos un arreglo asociativo con los valores de la clase que se va a llenar
+                var usuario = {
+                    nombre: $('#nombre').val(),
+                    apellidos: $('#apellidos').val(),
+                    edad: $('#edad').val(),
+                    fecharegistro: $('#fecha').val()
+                };
+
+                //Hacemos la petición ajax en donde url corresponde al elemento que ejecutará la petición y data los datos a envíar
+                $.ajax({
+                    url: '@Url.Action("usrAdd", "Home")',
+                    type: "POST",
+                    contentType: 'application/json',
+                    data: JSON.stringify({ usuario: usuario }),
+                    success: function (response) {
+                        if (response.succes) {
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert("Error al realizar la petición");
+                    }
+
+                });
+            });
+
+            function cargarTabla(arreglo) {
+                //Limpiamos el body de la tabla
+                $("#tablaBody").empty();
+                
+                //Recorrer datos y agregar filas a la tabla cuando no se tienen datos el bucle for no se ejecuta
+                for (var clave in arreglo) {
+                    //Verificamos si el arreglo contiene alguna propiedad dentro de ella
+                    if (arreglo.hasOwnProperty(clave)) {
+                        //Creamos la fila
+                        var fila = $('<tr></tr>');
+                        //El dato a tratar ahora se convierte en la clave en la que está ubicada del arreglo asociativo
+                        var objetoDatos = arreglo[clave];
+                        console.log(objetoDatos);
+                        //Recorremos ahora los elementos del objeto actual, ahora si se crean las columnas de cada elemento
+
+                        for (var propiedad in objetoDatos) {
+                            //Verificamos si el objeto datos coincide con su propiedad
+                            if (objetoDatos.hasOwnProperty(propiedad)) {
+                                console.log(objetoDatos[propiedad]);
+                                //Generamos la celda en código html
+                                var celda = $("<td></td>");
+                                celda.text(objetoDatos[propiedad]);
+                                fila.append(celda);
+                            }
+                        }
+                        var celda = $("<td class='d-flex flex-column'></td>");
+                        //Creamos el botón con el valor del id del objeto asociativo por keys de strings
+                        var botonModificar = $("<button class='btn btn-success'> Modificar registro </button>").attr('value', objetoDatos['id']);
+                        var botonEliminar = $("<button class='btn btn-warning mt-4'> Eliminar </button>").attr('value', objetoDatos['id']);
+                        //añadir elementos al elemento que contiene el append
+                        celda.append(botonModificar);
+                        celda.append(botonEliminar);
+                        fila.append(celda);
+                        $("#tablaBody").append(fila);
+                    }
+                }
+            }
+
+            function cargarDatos() {
+            var usuarios;
+            $.ajax({
+                url: '@Url.Action("mostrarUsuarios", "Home")',
+                type: "GET",
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        usuarios = response.data;
+                        cargarTabla(usuarios);
+                        //console.log(usuarios);
+                    } else {
+                        console.log("Ha ocurrido un error al intentar recibir una respuesta");
+                    }
+                },
+                error: function (error) {
+                    alert("Error al realizar la petición, verifica tus datos de petición");
+                }
+            });
+            return usuarios;
+        }
+        });
+    </script>
+}
