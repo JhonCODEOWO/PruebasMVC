@@ -71,5 +71,42 @@ namespace PruebasMVC.Controllers
                 return Json(new { success = false, message = ex.Message});
             }
         }
+
+        [HttpGet]
+        public JsonResult obtenerUsuario(int id)
+        {
+            try
+            {
+                List<EN_Usuario> usuario = new RN_Usuario().obtenerUsuario(id);
+                return Json(new { success = true, message = "Se ha obtenido un resultado", data = usuario }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult actualizarUsuario(EN_Usuario usuario)
+        {
+            bool resultadoOperacion;
+            try
+            {
+                RN_Usuario user_methods = new RN_Usuario();
+                resultadoOperacion = user_methods.modificarUsuario(usuario);
+                if (resultadoOperacion)
+                {
+                    return Json(new { success = true, message = "Actualización realizada con éxito" });
+                }
+                else
+                {
+                    return Json(new { success = true, message = "Se ha realizado la operación pero ha ocurrido un error en la capa datos" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

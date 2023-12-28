@@ -17,7 +17,7 @@
         <label for="apellidos">Apellidos</label>
         <input type="text" id="apellidos" name="apellidos" />
     </div>
-    
+
     <div class="mb-3">
         <label for="edad">Edad</label>
         <input type="number" id="edad" name="edad" />
@@ -27,8 +27,8 @@
         <label for="fecha">Fecha de registro:</label>
         <input type="date" id="fecha" name="fecha" />
     </div>
-    
-    <button type="submit"  class="btn btn-success"> Envíar datos </button>
+
+    <button type="submit" class="btn btn-success"> Envíar datos </button>
 </form>
 
 
@@ -44,9 +44,40 @@
         </tr>
     </thead>
     <tbody id="tablaBody" class="text-lg-center">
-
     </tbody>
 </table>
+
+@* Modal para el botón generado de modificación, cuando se haga click en el botón se cargaran los datos en los input *@
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modificando elemento</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditando" class="d-flex flex-column">
+                    <label for="">Id</label>
+                    <input type="text" name="idEditando" id="idEditando" />
+                    <label for="">Nombre</label>
+                    <input type="text" name="nombreEditando" id="nombreEditando" />
+                    <label for="">Apellidos</label>
+                    <input type="text" name="apellidosEditando" id="apellidosEditando" />
+                    <label for="">Edad</label>
+                    <input type="number" name="edadEditando" id="edadEditando" />
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cerrar </button>
+                        <button type="submit" class="btn btn-primary"> Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 @section scripts{
     <script>
@@ -54,6 +85,7 @@
         $(document).ready(function () {
             //Carga de funciones
             cargarDatos();
+            //console.log(obtenerUsuario(1));
 
             //cuando el formulario hace un evento submit
             $('#formulario').submit(function (event) {
@@ -86,12 +118,44 @@
                     }
 
                 });
+                cargarDatos();
             });
+
+            $('#formEditando').submit(function (event) {
+                event.preventDefault();
+                console.log("En submit");
+
+                var usuario = {
+                    id: $('#idEditando').val,
+                    nombre: $('#nombreEditando').val,
+                    apellidos: $('#apellidosEditando').val,
+                    edad: $('#edadEditando').val
+                }
+
+                $.ajax({
+                    url: '@Url.Action("actualizarUsuario", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ usuario: usuario }),
+                    success: function (response) {
+                        if (response.succes) {
+                            cargarDatos();
+                        } else {
+                            alert("La petición ha tenido un error del lado del controlador");
+                        }
+                    },
+                    error: function (error) {
+                        alert("Ha ocurrido un error en la petición ajax");
+                    }
+                })
+            })
+
+
 
             function cargarTabla(arreglo) {
                 //Limpiamos el body de la tabla
-                $("#tablaBody").empty();
-                
+                $('#tablaBody').empty();
+
                 //Recorrer datos y agregar filas a la tabla cuando no se tienen datos el bucle for no se ejecuta
                 for (var clave in arreglo) {
                     //Verificamos si el arreglo contiene alguna propiedad dentro de ella
@@ -100,13 +164,13 @@
                         var fila = $('<tr></tr>');
                         //El dato a tratar ahora se convierte en la clave en la que está ubicada del arreglo asociativo
                         var objetoDatos = arreglo[clave];
-                        console.log(objetoDatos);
+                        //console.log(objetoDatos);
                         //Recorremos ahora los elementos del objeto actual, ahora si se crean las columnas de cada elemento
 
                         for (var propiedad in objetoDatos) {
                             //Verificamos si el objeto datos coincide con su propiedad
                             if (objetoDatos.hasOwnProperty(propiedad)) {
-                                console.log(objetoDatos[propiedad]);
+                                //console.log(objetoDatos[propiedad]);
                                 //Generamos la celda en código html
                                 var celda = $("<td></td>");
                                 celda.text(objetoDatos[propiedad]);
@@ -115,13 +179,13 @@
                         }
                         var celda = $("<td class='d-flex flex-column'></td>");
                         //Creamos el botón con el valor del id del objeto asociativo por keys de strings
-                        var botonModificar = $("<button class='btn btn-success'> Modificar registro </button>").attr('value', objetoDatos['id']);
-                        var botonEliminar = $("<button class='btn btn-warning mt-4'> Eliminar </button>").attr('value', objetoDatos['id']);
+                        var botonModificar = $("<button class='btn btn-success btnEditar' data-bs-toggle='modal' data-bs-target='#exampleModal'> Modificar registro </button>").attr('value', objetoDatos['id']);
+                        var botonEliminar = $("<button class='btn btn-warning mt-4' type='submit'> Eliminar </button>").attr('value', objetoDatos['id']);
                         //añadir elementos al elemento que contiene el append
                         celda.append(botonModificar);
                         celda.append(botonEliminar);
                         fila.append(celda);
-                        $("#tablaBody").append(fila);
+                        $('#tablaBody').append(fila);
                     }
                 }
             }
@@ -146,7 +210,59 @@
                 }
             });
             return usuarios;
-        }
+            }
         });
+
+        function obtenerUsuario(id) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: '@Url.Action("obtenerUsuario", "Home")',
+                    type: 'GET',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            var usuario = response.data;
+                            resolve(usuario);
+                        } else {
+                            reject("No se ha recibido una respuesta exitosa");
+                        }
+                    }
+                })
+            })
+        }
+
+        //function modificarUsuario() {
+        //    var id = $('.btnEditar').val();
+        //    var usuario = obtenerUsuario(id);
+        //    console.log(id);
+        //    console.log(usuario);
+        //}
+
+        //Para cuando existen mas de 1 elemento al que queremos hacer click y realizar acciones dependiendo de cada uno
+        $(document).on('click', '.btnEditar', function () {
+            var id = $(this).val();
+            var usuarioObtenido;
+            var nombre, apellidos, edad;
+
+            //Para funciones ajax promises se debe usar then y catch
+            obtenerUsuario(id)
+                //Entre los parentesis se coloca el dato a recibir con el cual trabajaremos
+                .then(function (usuario) {
+                    usuarioObtenido = usuario;
+                    console.log(usuarioObtenido);
+                    //Guardamos los valores en variables individuales
+                    nombre = usuarioObtenido[0]['nombre'];
+                    apellidos = usuarioObtenido[0]['apellidos'];
+                    edad = usuarioObtenido[0]['edad'];
+                    //Mandamos ahora los valores a los input del formulario
+                    $('#idEditando').val(id);
+                    $('#nombreEditando').val(nombre);
+                    $('#apellidosEditando').val(apellidos);
+                    $('#edadEditando').val(edad);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        })
     </script>
 }

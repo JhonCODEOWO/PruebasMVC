@@ -40,7 +40,7 @@ namespace CapaDatos
                 return false;
             }
         }
-
+        //Devuelve una lista con todos los registros de la base de datos
         public List<EN_Usuario> mostrarUsuarios()
         {
             List<EN_Usuario> usuarios = new List<EN_Usuario>();
@@ -80,6 +80,65 @@ namespace CapaDatos
             {
                 string error = ex.Message;
                 return null;
+            }
+        }
+
+        //Devuelve un solo usuario usada para modificar aunque podrias implementarlo para otros fines como mostrar el nombre del usuario después de un login
+        public List<EN_Usuario> obtenerUsuario(int id)
+        {
+            List<EN_Usuario> usuarios = new List<EN_Usuario>();
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(new BD_Conexion().conectar()))
+                {
+                    string query = "SELECT nombre, apellido, edad FROM Persona WHERE id = @id";
+                    SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                    sqlCommand.Parameters.Add("@id", SqlDbType.Int).Value = id;
+                    sqlConnection.Open();
+                    SqlDataReader dataReader = sqlCommand.ExecuteReader();
+                    if (dataReader.HasRows)
+                    {
+                        while (dataReader.Read())
+                        {
+                            EN_Usuario usuario = new EN_Usuario
+                            {
+                                nombre = dataReader.GetString(0),
+                                apellidos = dataReader.GetString(1),
+                                edad = dataReader.GetInt32(2)
+                            };
+                            usuarios.Add(usuario);
+                        }
+                    }
+                }
+                return usuarios;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public bool actualizarUsuario(EN_Usuario usuario)
+        {
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(new BD_Conexion().conectar()))
+                {
+                    string query = "UPDATE Persona SET nombre = @nombre, apellido = @apellido, edad = @edad WHERE id = @id";
+                    SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                    sqlCommand.Parameters.Add("@nombre", SqlDbType.VarChar).Value = usuario.nombre;
+                    sqlCommand.Parameters.Add("@apellido", SqlDbType.VarChar).Value = usuario.apellidos;
+                    sqlCommand.Parameters.Add("@edad", SqlDbType.Int).Value = usuario.edad;
+                    sqlCommand.Parameters.Add("@id", SqlDbType.Int).Value = usuario.id;
+                    sqlConnection.Open();
+                    sqlCommand.ExecuteNonQuery();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+                return false;
             }
         }
     }

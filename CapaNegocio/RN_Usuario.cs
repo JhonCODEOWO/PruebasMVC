@@ -20,5 +20,15 @@ namespace CapaNegocio
         {
             return user_methods.mostrarUsuarios();
         }
+
+        public List<EN_Usuario> obtenerUsuario(int id)
+        {
+            return user_methods.obtenerUsuario(id);
+        }
+
+        public bool modificarUsuario(EN_Usuario usuario)
+        {
+            return user_methods.actualizarUsuario(usuario);
+        }
     }
 }
