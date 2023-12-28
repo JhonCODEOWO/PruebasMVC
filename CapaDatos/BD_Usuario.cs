@@ -126,10 +126,45 @@ namespace CapaDatos
                 {
                     string query = "UPDATE Persona SET nombre = @nombre, apellido = @apellido, edad = @edad WHERE id = @id";
                     SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
-                    sqlCommand.Parameters.Add("@nombre", SqlDbType.VarChar).Value = usuario.nombre;
-                    sqlCommand.Parameters.Add("@apellido", SqlDbType.VarChar).Value = usuario.apellidos;
-                    sqlCommand.Parameters.Add("@edad", SqlDbType.Int).Value = usuario.edad;
-                    sqlCommand.Parameters.Add("@id", SqlDbType.Int).Value = usuario.id;
+
+                    sqlCommand.Parameters.Add("@nombre", SqlDbType.VarChar);
+                    sqlCommand.Parameters["@nombre"].Value = usuario.nombre;
+
+                    sqlCommand.Parameters.Add("@apellido", SqlDbType.VarChar);
+                    sqlCommand.Parameters["@apellido"].Value = usuario.apellidos;
+
+                    sqlCommand.Parameters.Add("@edad", SqlDbType.Int);
+                    sqlCommand.Parameters["@edad"].Value = usuario.edad;
+
+                    sqlCommand.Parameters.Add("@id", SqlDbType.Int);
+                    sqlCommand.Parameters["@id"].Value = usuario.id;
+
+                    //sqlCommand.Parameters.Add("@nombre", SqlDbType.VarChar).Value = usuario.nombre;
+                    //sqlCommand.Parameters.Add("@apellido", SqlDbType.VarChar).Value = usuario.apellidos;
+                    //sqlCommand.Parameters.Add("@edad", SqlDbType.Int).Value = usuario.edad;
+                    //sqlCommand.Parameters.Add("@id", SqlDbType.Int).Value = usuario.id;
+                    sqlConnection.Open();
+                    sqlCommand.ExecuteNonQuery();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+                return false;
+            }
+        }
+
+        public bool eliminarUsuario(int id)
+        {
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(new BD_Conexion().conectar()))
+                {
+                    string query = "DELETE FROM Persona WHERE id = @id";
+                    SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                    sqlCommand.Parameters.Add("@id", SqlDbType.Int);
+                    sqlCommand.Parameters["@id"].Value = id;
                     sqlConnection.Open();
                     sqlCommand.ExecuteNonQuery();
                 }

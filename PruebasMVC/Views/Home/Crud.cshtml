@@ -6,8 +6,9 @@
 
 <h1>Panel de administración</h1>
 
+<button class='btn btn-success btnEditar' data-bs-toggle='modal' data-bs-target='#nuevoModal'> Añadir nuevo registro </button>
 
-<form id="formulario">
+@*<form id="formulario">
     <div class="mb-3">
         <label for="nombre">Nombre de usuario:</label>
         <input type="text" id="nombre" name="nombre" />
@@ -29,7 +30,7 @@
     </div>
 
     <button type="submit" class="btn btn-success"> Envíar datos </button>
-</form>
+</form>*@
 
 
 <table class="table table-dark mt-4" id="tabla">
@@ -76,6 +77,38 @@
     </div>
 </div>
 
+<!-- Modal añadir nuevo -->
+<div class="modal fade" id="nuevoModal" tabindex="-1" aria-labelledby="nuevoModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Añadiendo nuevo elemento</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formulario" class="d-flex flex-column">
+                    <label for="nombre">Nombre de usuario:</label>
+                    <input type="text" id="nombre" name="nombre" />
+
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" id="apellidos" name="apellidos" />
+
+                    <label for="edad">Edad</label>
+                    <input type="number" id="edad" name="edad" />
+
+                    <label for="fecha">Fecha de registro:</label>
+                    <input type="date" id="fecha" name="fecha" />
+                    
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal"> Cerrar </button>
+                        <button type="submit" class="btn btn-success"> Envíar datos </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -107,7 +140,10 @@
                     data: JSON.stringify({ usuario: usuario }),
                     success: function (response) {
                         if (response.succes) {
-                            alert(response.message);
+                            limpiarEntradas();
+                            cargarDatos();
+                            $('#closeModal').trigger('click');
+                            //alert(response.message);
                         } else {
                             alert(response.message);
                         }
@@ -126,10 +162,10 @@
                 console.log("En submit");
 
                 var usuario = {
-                    id: $('#idEditando').val,
-                    nombre: $('#nombreEditando').val,
-                    apellidos: $('#apellidosEditando').val,
-                    edad: $('#edadEditando').val
+                    id: $('#idEditando').val(),
+                    nombre: $('#nombreEditando').val(),
+                    apellidos: $('#apellidosEditando').val(),
+                    edad: $('#edadEditando').val()
                 }
 
                 $.ajax({
@@ -138,7 +174,7 @@
                     contentType: 'application/json',
                     data: JSON.stringify({ usuario: usuario }),
                     success: function (response) {
-                        if (response.succes) {
+                        if (response.success) {
                             cargarDatos();
                         } else {
                             alert("La petición ha tenido un error del lado del controlador");
@@ -180,7 +216,7 @@
                         var celda = $("<td class='d-flex flex-column'></td>");
                         //Creamos el botón con el valor del id del objeto asociativo por keys de strings
                         var botonModificar = $("<button class='btn btn-success btnEditar' data-bs-toggle='modal' data-bs-target='#exampleModal'> Modificar registro </button>").attr('value', objetoDatos['id']);
-                        var botonEliminar = $("<button class='btn btn-warning mt-4' type='submit'> Eliminar </button>").attr('value', objetoDatos['id']);
+                        var botonEliminar = $("<button class='btn btn-warning mt-4 btnEliminar' type='submit'> Eliminar </button>").attr('value', objetoDatos['id']);
                         //añadir elementos al elemento que contiene el append
                         celda.append(botonModificar);
                         celda.append(botonEliminar);
@@ -213,6 +249,13 @@
             }
         });
 
+        function limpiarEntradas() {
+            $('#nombre').val('');
+            $('#apellidos').val('');
+            $('#edad').val('');
+            //$('#nombre').val('');
+        }
+
         function obtenerUsuario(id) {
             return new Promise(function (resolve, reject) {
                 $.ajax({
@@ -231,12 +274,35 @@
             })
         }
 
+        function eliminarUsuario(id) {
+            $.ajax({
+                url: '@Url.Action("eliminarUsuario", "Home")',
+                type: 'POST',
+                data: { id: id },
+                success: function (response) {
+                    if (response.success) {
+                        cargarDatos();
+                    } else {
+                        alert("Error en la petición desde parte del controlador");
+                    }
+                },
+                error: function (error) {
+                    alert("Error al ejecutar la petición ajax");
+                }
+
+            })
+        }
+
         //function modificarUsuario() {
         //    var id = $('.btnEditar').val();
         //    var usuario = obtenerUsuario(id);
         //    console.log(id);
         //    console.log(usuario);
         //}
+        $(document).on('click', '.btnEliminar', function () {
+            var id = $(this).val();
+            eliminarUsuario(id);
+        });
 
         //Para cuando existen mas de 1 elemento al que queremos hacer click y realizar acciones dependiendo de cada uno
         $(document).on('click', '.btnEditar', function () {

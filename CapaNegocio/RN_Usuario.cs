@@ -30,5 +30,10 @@ namespace CapaNegocio
         {
             return user_methods.actualizarUsuario(usuario);
         }
+
+        public bool eliminarUsuario(int id)
+        {
+            return user_methods.eliminarUsuario(id);
+        }
     }
 }

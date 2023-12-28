@@ -108,5 +108,28 @@ namespace PruebasMVC.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        public JsonResult eliminarUsuario(int id)
+        {
+            bool resultado;
+            try
+            {
+                RN_Usuario user_methods = new RN_Usuario();
+                resultado = user_methods.eliminarUsuario(id);
+                if (resultado)
+                {
+                    return Json(new { success = true, message = "Eliminación exitosa" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Se ha realizado la operacion en la capa datos pero se ha recibido un valor falso" });
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
