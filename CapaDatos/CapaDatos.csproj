@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BD_Conexion.cs" />
+    <Compile Include="BD_Objeto.cs" />
     <Compile Include="BD_Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

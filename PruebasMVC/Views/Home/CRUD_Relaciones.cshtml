@@ -1,0 +1,101 @@
+﻿
+@{
+    ViewBag.Title = "CRUD_Relaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>CRUD_Relaciones</h1>
+<p>De la tabla de la <a href="@Url.Action("CRUD", "Home")">primera práctica</a> se ha creado otra con el nombre de "Objeto", intentando simular la propiedad de un objeto hacia una persona, el query para esta tabla lo puedesencontrar <a href="https://gist.github.com/JhonCODEOWO/37ebe0413cd44b015cb945922fe417ac">aquí</a> cabe resaltar que la tabla es básica, pues solo es para la demostración de manejar el crud de relaciones, igualmente el "UNIQUE"  no es funcional en un ejemplo real, pues objetos pueden haber muchisimos y con diferentes nombres, aún así se colocó para la demostración de como manejar estos valores únicos</p>
+
+<button class='btn btn-success btnEditar' data-bs-toggle='modal' data-bs-target='#nuevoModal'> Añadir nuevo registro </button>
+
+<h2 class="mt-3">Listado de objetos</h2>
+<table class="table table-dark mt-4" id="tabla">
+    <thead>
+        <tr class="text-lg-center">
+            <th>ID</th>
+            <th>Objeto</th>
+            <th>Dueño</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="tablaBody" class="text-lg-center">
+    </tbody>
+</table>
+
+<!-- Modal añadir nuevo -->
+<div class="modal fade" id="nuevoModal" tabindex="-1" aria-labelledby="nuevoModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Añadiendo nuevo elemento</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formularioNuevo" class="d-flex flex-column">
+                    <label for="nombre">Identificación del objeto:</label>
+                    <input type="text" id="txtIdObjeto" name="txtIdObjeto" placeholder="Ingresa un código con solo números"/>
+
+                    <label for="nombre">Nombre de usuario:</label>
+                    <input type="text" id="txtNombreObjeto" name="txtNombreObjeto" placeholder="Escribe un nombre para el objeto"/>
+
+                    <label>Dueño del objeto</label>
+                    <select id="selectDueño">
+                        <option>Jonathan</option>
+                    </select>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal"> Cerrar </button>
+                        <button type="submit" class="btn btn-success"> Envíar datos </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function (event) {
+
+            $('#formularioNuevo').submit(function (event) {
+                event.preventDefault();
+
+                var objeto = {
+                    idObjeto: $('#txtIdObjeto').val(),
+                    nombreObjeto: $('#txtNombreObjeto').val(),
+                    idUsuario: $('#selectDueño').val()
+                };
+
+
+            });
+        });
+
+        function cargarSelect() {
+            for (var clave in arreglo) {
+                if (arreglo.hasOwnProperty(clave)) {
+                    var option = "<option></option>";
+
+                }
+            }
+        }
+
+        function obtenerUsuarios() {
+            $.ajax({
+                url: '@Url.Action("mostrarUsuarios", "Home")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+
+                    } else {
+
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+    </script>
+}

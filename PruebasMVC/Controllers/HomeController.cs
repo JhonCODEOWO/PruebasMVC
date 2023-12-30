@@ -20,6 +20,11 @@ namespace PruebasMVC.Controllers
             return View();
         }
 
+        public ActionResult CRUD_Relaciones()
+        {
+            return View();
+        }
+
         public ActionResult About()
         {
             //ViewBag.Message = "Your application description page.";
@@ -125,6 +130,51 @@ namespace PruebasMVC.Controllers
                     return Json(new { success = false, message = "Se ha realizado la operacion en la capa datos pero se ha recibido un valor falso" });
                 }
                 
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public JsonResult AñadirUsuario(EN_Objeto objeto)
+        {
+            //Se almacena en resultado llo obtenido por el método, que en el caso de ser 1 quiere decir que si hubo una inserción
+            string resultado;
+            try
+            {
+                RN_Objeto rn_objeto = new RN_Objeto();
+                resultado = rn_objeto.AñadirObjeto(objeto);
+                if (Convert.ToInt32(resultado) == 1)
+                {
+                    return Json(new { success = true, message = resultado }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    return Json(new { success = false, message = resultado }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public JsonResult ListarObjetos()
+        {
+            List<EN_Objeto> objetos = new List<EN_Objeto>();
+            try
+            {
+                RN_Objeto objeto = new RN_Objeto();
+                objetos = objeto.ListarObjetos();
+                if (objetos != null)
+                {
+                    return Json(new { success = true, message = "Se han obtenido los datos", data = objetos });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Se ha devuelto una lista vacía, verifica en la capa datos" });
+                }
             }
             catch (Exception ex)
             {
