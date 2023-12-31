@@ -137,7 +137,7 @@ namespace PruebasMVC.Controllers
             }
         }
 
-        public JsonResult AñadirUsuario(EN_Objeto objeto)
+        public JsonResult AñadirObjeto(EN_Objeto objeto)
         {
             //Se almacena en resultado llo obtenido por el método, que en el caso de ser 1 quiere decir que si hubo una inserción
             string resultado;
@@ -145,7 +145,8 @@ namespace PruebasMVC.Controllers
             {
                 RN_Objeto rn_objeto = new RN_Objeto();
                 resultado = rn_objeto.AñadirObjeto(objeto);
-                if (Convert.ToInt32(resultado) == 1)
+                //Resultado a veces tendra cadenas de texto, por lo que debemos usar int.tryparse para recibir un boleano si se pudo convertir sin obtener una excepcion
+                if (int.TryParse(resultado, out int filaAfectada) && filaAfectada == 1)
                 {
                     return Json(new { success = true, message = resultado }, JsonRequestBehavior.AllowGet);
                 }

@@ -32,21 +32,24 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div class="alert alert-danger" role="alert" id="advertencia">
+                    
+                </div>
+
                 <form id="formularioNuevo" class="d-flex flex-column">
                     <label for="nombre">Identificación del objeto:</label>
-                    <input type="text" id="txtIdObjeto" name="txtIdObjeto" placeholder="Ingresa un código con solo números"/>
+                    <input type="text" id="txtIdObjeto" name="txtIdObjeto" placeholder="Ingresa un código con solo números" />
 
-                    <label for="nombre">Nombre de usuario:</label>
-                    <input type="text" id="txtNombreObjeto" name="txtNombreObjeto" placeholder="Escribe un nombre para el objeto"/>
+                    <label for="nombre">Nombre para el objeto:</label>
+                    <input type="text" id="txtNombreObjeto" name="txtNombreObjeto" placeholder="Escribe un nombre para el objeto" />
 
                     <label>Dueño del objeto</label>
                     <select id="selectDueño">
-                        <option>Jonathan</option>
                     </select>
 
                     <div class="d-flex justify-content-end mt-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal"> Cerrar </button>
-                        <button type="submit" class="btn btn-success"> Envíar datos </button>
+                        <button type="submit" class="btn btn-success" data-bs-toggle="popover" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?"> Envíar datos </button>
                     </div>
                 </form>
             </div>
@@ -56,28 +59,90 @@
 
 @section scripts{
     <script>
+        //Elementos para acceder después
+        var advertencia = $('#advertencia');
+        advertencia.hide();
+
         $(document).ready(function (event) {
+
+            obtenerUsuarios();
 
             $('#formularioNuevo').submit(function (event) {
                 event.preventDefault();
+                var idObjetoForm = $('#txtIdObjeto').val();
+                var nombreObjetoForm = $('#txtNombreObjeto').val();
+                var idUsuarioForm = $('#selectDueño').val();
 
-                var objeto = {
-                    idObjeto: $('#txtIdObjeto').val(),
-                    nombreObjeto: $('#txtNombreObjeto').val(),
-                    idUsuario: $('#selectDueño').val()
-                };
+                if (idObjetoForm.trim() == '' || nombreObjetoForm.trim() == '' || idUsuarioForm.trim() == '') {
+                    mostrarAdvertencia('Debes llenar todos los datos')
+                } else {
+                    var objeto = {
+                        id: idObjetoForm,
+                        nombreObjeto: nombreObjetoForm,
+                        usuarioId: idUsuarioForm
+                    };
+
+                    console.log(objeto);
+
+                    $.ajax({
+                        url: '@Url.Action("AñadirObjeto", "Home")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ objeto: objeto }),
+                        success: function (response) {
+                            if (response.success) {
+                                console.log("Objeto añadido exitosamente");
+                            } else {
+                                console.log(response.message);
+                                mostrarAdvertencia(response.message);
+                            }
+                        },
+                        error: function (error) {
+                            console.log("Error ajax para la petición");
+                        }
+
+                    });
+                }
 
 
             });
         });
 
-        function cargarSelect() {
+        function mostrarAdvertencia(texto) {
+            advertencia.show();
+            advertencia.text(texto);
+            //var intervalo = setInterval(ocultarAdvertencia, 5000);
+
+            setTimeout(function () {
+                ocultarAdvertencia();
+                //clearInterval(intervalo);
+            }, 5000);
+        }
+
+        function cargarSelect(arreglo) {
+            //Recorre cada elemento asociativo sin entrar a sus propiedades
             for (var clave in arreglo) {
                 if (arreglo.hasOwnProperty(clave)) {
-                    var option = "<option></option>";
+                    console.log("Si hubo un hijo del elemento");
+                    var option = $("<option></option>");
 
+                    //Guardamos el elemento accedido como una variable para poder acceder manualmente a cada elemento
+                    var objetoDato = arreglo[clave];
+                    var id = objetoDato['id'];
+                    var nombre = objetoDato['nombre'];
+
+                    //Al objeto html creado vamos a añadirle los atributos que deseamos
+                    option.text(nombre);
+                    option.attr('value', id);
+
+                    //Añadimos al select los elementos
+                    $('#selectDueño').append(option);
                 }
             }
+        }
+
+        function ocultarAdvertencia() {
+            advertencia.hide();
         }
 
         function obtenerUsuarios() {
@@ -87,15 +152,20 @@
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-
+                        var usuarios = response.data;
+                        cargarSelect(usuarios);
                     } else {
-
+                        return null;
                     }
                 },
                 error: function (error) {
                     console.log(error);
                 }
             });
+        }
+
+        function obtenerObjetos() {
+
         }
     </script>
 }
