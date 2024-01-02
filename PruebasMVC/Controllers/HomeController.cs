@@ -25,6 +25,11 @@ namespace PruebasMVC.Controllers
             return View();
         }
 
+        public ActionResult UI_Productos()
+        {
+            return View();
+        }
+
         public ActionResult About()
         {
             //ViewBag.Message = "Your application description page.";
@@ -137,6 +142,7 @@ namespace PruebasMVC.Controllers
             }
         }
 
+        [HttpPost]
         public JsonResult AñadirObjeto(EN_Objeto objeto)
         {
             //Se almacena en resultado llo obtenido por el método, que en el caso de ser 1 quiere decir que si hubo una inserción
@@ -161,6 +167,33 @@ namespace PruebasMVC.Controllers
             }
         }
 
+        [HttpPost]
+        public JsonResult EditarObjeto(EN_Objeto objeto)
+        {
+            string resultado;
+            try
+            {
+                RN_Objeto rn_objeto = new RN_Objeto();
+                resultado = rn_objeto.ModificarObjeto(objeto);
+                //Si el resultado es 1 y se puede convertir la variable quiere decir que el valor es correcto
+                if (int.TryParse(resultado, out int filaAfectada) && filaAfectada == 1)
+                {
+                    return Json(new { success = true, message = resultado }, JsonRequestBehavior.AllowGet);
+                }
+                //Si no podemos convertirlo quiere decir que tiene texto, por lo que proviene de una excepción
+                else
+                {
+                    return Json(new { success = false, message = resultado }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            //Retornamos cualquier otra excepción no valorada...
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
         public JsonResult ListarObjetos()
         {
             List<EN_Objeto> objetos = new List<EN_Objeto>();
@@ -170,16 +203,16 @@ namespace PruebasMVC.Controllers
                 objetos = objeto.ListarObjetos();
                 if (objetos != null)
                 {
-                    return Json(new { success = true, message = "Se han obtenido los datos", data = objetos });
+                    return Json(new { success = true, message = "Se han obtenido los datos", data = objetos }, JsonRequestBehavior.AllowGet);
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Se ha devuelto una lista vacía, verifica en la capa datos" });
+                    return Json(new { success = false, message = "Se ha devuelto una lista vacía, verifica en la capa datos" }, JsonRequestBehavior.AllowGet);
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
     }

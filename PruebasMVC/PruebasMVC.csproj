@@ -201,6 +201,7 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\Crud.cshtml" />
     <Content Include="Views\Home\CRUD_Relaciones.cshtml" />
+    <Content Include="Views\Home\UI_Productos.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

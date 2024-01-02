@@ -11,5 +11,7 @@ namespace CapaEntidad
         public int id { get; set; }
         public string nombreObjeto { get; set; }
         public int usuarioId { get; set; }
+        public string datosUsuario { get; set; }
+
     }
 }

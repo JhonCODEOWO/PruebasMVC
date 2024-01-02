@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>CRUD_Relaciones</h1>
+<h1>Control crud para relaciones en base de datos (De muchos a uno)</h1>
 <p>De la tabla de la <a href="@Url.Action("CRUD", "Home")">primera práctica</a> se ha creado otra con el nombre de "Objeto", intentando simular la propiedad de un objeto hacia una persona, el query para esta tabla lo puedesencontrar <a href="https://gist.github.com/JhonCODEOWO/37ebe0413cd44b015cb945922fe417ac">aquí</a> cabe resaltar que la tabla es básica, pues solo es para la demostración de manejar el crud de relaciones, igualmente el "UNIQUE"  no es funcional en un ejemplo real, pues objetos pueden haber muchisimos y con diferentes nombres, aún así se colocó para la demostración de como manejar estos valores únicos</p>
 
 <button class='btn btn-success btnEditar' data-bs-toggle='modal' data-bs-target='#nuevoModal'> Añadir nuevo registro </button>
@@ -32,8 +32,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-danger" role="alert" id="advertencia">
-                    
+                <div class="alert alert-danger" role="alert" id="advertencia" style="display:none">
+
                 </div>
 
                 <form id="formularioNuevo" class="d-flex flex-column">
@@ -57,14 +57,54 @@
     </div>
 </div>
 
+<!-- Modal editar -->
+<div class="modal fade" id="editandoModal" tabindex="-1" aria-labelledby="editandoModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modificando elemento</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" role="alert" id="advertenciaEditando" style="display:none">
+
+                </div>
+
+                <form id="formularioEditar" class="d-flex flex-column">
+                    <label for="nombre">Identificación asignada al objeto:</label>
+                    <input type="text" id="txtIdObjetoEditando" name="txtIdObjeto" placeholder="Ingresa un código con solo números" />
+
+                    <label for="nombre">Nombre para el objeto:</label>
+                    <input type="text" id="txtNombreObjetoEditando" name="txtNombreObjeto" placeholder="Escribe un nombre para el objeto" />
+
+                    <label>Dueño del objeto</label>
+                    <select id="selectDueñoEditando">
+                    </select>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal"> Cerrar </button>
+                        <button type="submit" class="btn btn-success" data-bs-toggle="popover" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?"> Envíar datos </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section scripts{
     <script>
         //Elementos para acceder después
         var advertencia = $('#advertencia');
-        advertencia.hide();
+        //Selección de elementos del form de edición
+        var txtId_Edit = $('#txtIdObjetoEditando');
+        var nombreObjeto_Edit = $('#txtNombreObjetoEditando');
+        var idUsuarioObjeto_Edit = $('#selectDueñoEditando');
+
+        //advertencia.hide();
 
         $(document).ready(function (event) {
 
+            obtenerObjetos();
             obtenerUsuarios();
 
             $('#formularioNuevo').submit(function (event) {
@@ -74,7 +114,7 @@
                 var idUsuarioForm = $('#selectDueño').val();
 
                 if (idObjetoForm.trim() == '' || nombreObjetoForm.trim() == '' || idUsuarioForm.trim() == '') {
-                    mostrarAdvertencia('Debes llenar todos los datos')
+                    mostrarAdvertencia($('#advertencia'),'Debes llenar todos los datos')
                 } else {
                     var objeto = {
                         id: idObjetoForm,
@@ -93,8 +133,9 @@
                             if (response.success) {
                                 console.log("Objeto añadido exitosamente");
                             } else {
-                                console.log(response.message);
-                                mostrarAdvertencia(response.message);
+                                //Si falla la adicion del elemento mostramos la advertencia con el mensaje recibido como respuesta
+                                //console.log(response.message);
+                                mostrarAdvertencia($('#advertencia'),response.message);
                             }
                         },
                         error: function (error) {
@@ -106,15 +147,48 @@
 
 
             });
+
+            $('#formularioEditar').submit(function (event) {
+                event.preventDefault();
+
+                var idObjetoForm = $('#txtIdObjetoEditando').val();
+                var nombreObjetoForm = $('#txtNombreObjetoEditando').val();
+                var idUsuarioForm = $('#selectDueñoEditando').val();
+
+                if (idObjetoForm.trim() == '' || nombreObjetoForm.trim() == '' || idUsuarioForm.trim() == '') {
+                    mostrarAdvertencia($('#advertenciaEditando') ,'Debes llenar todos los datos');
+                } else {
+                    var objeto = {
+                        id: idObjetoForm,
+                        nombreObjeto: nombreObjetoForm,
+                        usuarioId: idUsuarioForm
+                    };
+
+                    $.ajax({
+                    url: '@Url.Action("EditarObjeto", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ objeto: objeto }),
+                    success: function (response) {
+                            if (response.success) {
+                                console.log("Objeto editado exitosamente");
+                                obtenerObjetos();
+                            } else {
+                                mostrarAdvertencia($('#advertenciaEditando'),response.message);
+                            }
+                        }
+                    })
+                }
+            })
         });
 
-        function mostrarAdvertencia(texto) {
-            advertencia.show();
-            advertencia.text(texto);
+        function mostrarAdvertencia(elemento,texto) {
+            elemento.show();
+            elemento.text(texto);
             //var intervalo = setInterval(ocultarAdvertencia, 5000);
 
             setTimeout(function () {
-                ocultarAdvertencia();
+                ocultarAdvertencia(elemento);
                 //clearInterval(intervalo);
             }, 5000);
         }
@@ -123,8 +197,10 @@
             //Recorre cada elemento asociativo sin entrar a sus propiedades
             for (var clave in arreglo) {
                 if (arreglo.hasOwnProperty(clave)) {
-                    console.log("Si hubo un hijo del elemento");
-                    var option = $("<option></option>");
+
+                    //Se están duplicando elementos con las mismas propiedades, se puede crear un método para crearlos y evitar duplicación de código, la función esta abajo como createOptionForSelect, el codigo no optimizado se deja aquí sin embargo es algo que debes evitar.
+                    var option1 = $("<option></option>");
+                    var option2 = $("<option></option>");
 
                     //Guardamos el elemento accedido como una variable para poder acceder manualmente a cada elemento
                     var objetoDato = arreglo[clave];
@@ -132,17 +208,55 @@
                     var nombre = objetoDato['nombre'];
 
                     //Al objeto html creado vamos a añadirle los atributos que deseamos
-                    option.text(nombre);
-                    option.attr('value', id);
+                    option1.text(nombre);
+                    option1.attr('value', id);
+
+                    option2.text(nombre);
+                    option2.attr('value', id);
 
                     //Añadimos al select los elementos
-                    $('#selectDueño').append(option);
+                    $('#selectDueño').append(crearOptionForSelect(id, nombre));
+                    $('#selectDueñoEditando').append(crearOptionForSelect(id, nombre));
                 }
             }
         }
 
-        function ocultarAdvertencia() {
-            advertencia.hide();
+        function cargarTabla(arreglo) {
+            $("#tablaBody").empty();
+            //Recorre cada clave del arregloa asociativo...
+            for (var clave in arreglo) {
+                if (arreglo.hasOwnProperty(clave)) {
+                    var fila = $("<tr></tr>");
+
+                    var objetoDatos = arreglo[clave];
+
+                    //Recorre cada elemento dentro de una clave del arreglo asociativo...
+                    for (var propiedad in objetoDatos) {
+                        var celda = $("<td></td>");
+                        if (objetoDatos.hasOwnProperty(propiedad)) {
+                            if (propiedad != 'usuarioId') {
+                                celda.text(objetoDatos[propiedad])
+                                fila.append(celda);
+                            }
+                        }
+                    }
+
+                    var celda = $("<td class='d-flex flex-column'></td>");
+
+                    var botonModificar = $("<button class='btn btn-success btnEditar' data-bs-toggle='modal' data-bs-target='#editandoModal'> Modificar registro </button>").attr('value', objetoDatos['id']);
+                    var botonEliminar = $("<button class='btn btn-warning mt-4 btnEliminar' type='submit'> Eliminar </button>").attr('value', objetoDatos['id']);
+                    celda.append(botonModificar);
+                    celda.append(botonEliminar);
+
+                    fila.append(celda);
+
+                    $("#tablaBody").append(fila);
+                }
+            }
+        }
+
+        function ocultarAdvertencia(elemento) {
+            elemento.hide();
         }
 
         function obtenerUsuarios() {
@@ -165,7 +279,44 @@
         }
 
         function obtenerObjetos() {
-
+            $.ajax({
+                url: '@Url.Action("ListarObjetos", "Home")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        console.log(response);
+                        var objetos = response.data;
+                        objetos = response.data;
+                        cargarTabla(objetos);
+                    }
+                },
+                error: function (error) {
+                    console.log("Error de la petición ajax");
+                }
+            });
         }
+
+        function crearOptionForSelect(id, nombre) {
+            var option = $("<option></option>");
+            option.text(nombre);
+            option.val(id);
+            return option;
+        }
+
+        $(document).on('click', '.btnEditar', function () {
+            var id = $(this).val();
+            //Usamos closest para obtener el padre más cercano al elemento en el que se dió click
+            var fila = $(this).closest('tr');
+            //Accedemos a sus elementos usando find que encuentra elementos digitados dentro de el como css, en este caso accedemos a td y usamos el pseudoelemento eq que busca todos los hijos de es del padre que es tr permitiendo acceder a los elementos td dentro del tr actual
+            var nombreObjetoActual = fila.find('td:eq(1)').text();
+            var nombreUsuarioActual = fila.find('td:eq(2)').text();
+            txtId_Edit.val(id);
+            nombreObjeto_Edit.val(nombreObjetoActual);
+        });
+
+        $(document).on('click', '.btnEliminar', function () {
+
+        });
     </script>
 }

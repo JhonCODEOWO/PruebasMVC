@@ -56,7 +56,7 @@ namespace CapaDatos
             string resultado;
             try
             {
-                string query = "UPDATE objeto SET idObjeto = @idObjeto, nombreObjeto = @nombreObjeto, idUsuario = ";
+                string query = "UPDATE objeto SET nombreObjeto = @nombreObjeto, idUsuario = @idUsuario WHERE idObjeto = @idObjeto";
                 using (SqlConnection sqlConnection = new SqlConnection(new BD_Conexion().conectar()))
                 {
                     using (SqlCommand sqlCommand = new SqlCommand(query, sqlConnection))
@@ -94,7 +94,7 @@ namespace CapaDatos
             List<EN_Objeto> objetos = new List<EN_Objeto>();
             try
             {
-                string query = "SELECT * FROM objeto";
+                string query = "SELECT idObjeto, nombreObjeto, CONCAT(nombre, ' ', apellido) as usuario FROM objeto INNER JOIN Persona ON Persona.id = objeto.idUsuario;";
                 using (SqlConnection sqlConnection = new SqlConnection(new BD_Conexion().conectar()))
                 {
                     using (SqlCommand sqlCommand = new SqlCommand(query, sqlConnection))
@@ -110,7 +110,7 @@ namespace CapaDatos
                                 {
                                     id = Convert.ToInt32(reader["idObjeto"]),
                                     nombreObjeto = reader["nombreObjeto"].ToString(),
-                                    usuarioId = Convert.ToInt32(reader["idUsuario"])
+                                    datosUsuario = reader["usuario"].ToString()
                                 };
                                 objetos.Add(objeto);
                             }
