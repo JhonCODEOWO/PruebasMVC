@@ -1,0 +1,134 @@
+﻿
+@{
+    ViewBag.Title = "DashBoard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>DashBoard</h1>
+<p>En todan página web por parte de la administración es necesario un apartado dedicado al análisis, al tratamiento de datos que ingresan a nuestras fuentes de datos, un dashboard permite dar un vistazo a todos esos datos y poder tomar decisiones en base a ellos, a continuación verás como se realizan las gráficas de barras usando una libreria ya existente, llamada ChartTable</p>
+
+<h2> Graficación de usuarios con más objetos en posesión </h2>
+<div class="row align-items-center justify-content-center">
+    <div class="col">
+        <canvas id="graficaObjetos"> </canvas>
+    </div>
+    <div class="col">
+        <canvas id="graficaObjetos2"> </canvas>
+    </div>
+    <div class="col">
+        <canvas id="graficaObjetos3"> </canvas>
+    </div>
+    <div class="col">
+        <canvas id="graficaObjetos4"> </canvas>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        /*const { ajax } = require("jquery");*/
+        const colores1 = [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 205, 86)'
+        ];
+        const colores2 = [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(255, 159, 64, 0.2)',
+            'rgba(255, 205, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(201, 203, 207, 0.2)'
+        ];
+        const ctx = $('#graficaObjetos');
+        const ctx2 = $('#graficaObjetos2');
+        const ctx3 = $('#graficaObjetos3');
+        const ctx4 = $('#graficaObjetos4');
+        let labels = [];
+        let values = [];
+
+        //new Chart(ctx, {
+        //    type: 'bar',
+        //    data: {
+        //        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        //        datasets: [{
+        //            label: '# of Votes',
+        //            data: [12, 19, 3, 5, 2, 3],
+        //            borderWidth: 1
+        //        }]
+        //    },
+        //    options: {
+        //        scales: {
+        //            y: {
+        //                beginAtZero: true
+        //            }
+        //        }
+        //    }
+        //});
+
+        $(document).ready(function (event) {
+            UsuariosConObjetos();
+        });
+
+
+        function UsuariosConObjetos() {
+            $.ajax({
+            url: '@Url.Action("UsuariosConObjetos", "Home")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    var resultado = response.data;
+                    llenarGrafica(resultado, ctx, 'bar', coloresAleatorios);
+                    llenarGrafica(resultado, ctx2, 'doughnut', coloresAleatorios);
+                    llenarGrafica(resultado, ctx3, 'line', 'rgb(75, 192, 192)');
+                } else {
+                    console.log("Error al ejecutar la funcion en el controlador " + response.message);
+                }
+            },
+            error: function (error) {
+                alert("Error al realizar la petición, verifica tus datos de petición");
+            }
+        });
+        }
+
+        function llenarGrafica(arregloAsociativo, elementoCanvas, type, colors) {
+            console.log(arregloAsociativo);
+            for (var clave in arregloAsociativo) {
+                if (arregloAsociativo.hasOwnProperty(clave)) {
+                    var objetoDatos = arregloAsociativo[clave];
+                    values.push(objetoDatos['repeticiones']);
+                    labels.push(objetoDatos['label']);
+                }
+            }
+
+            new Chart(elementoCanvas, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Número de objetos en posición',
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            labels = [];
+            values = [];
+        }
+
+        const coloresAleatorios = Array.from({ length: 20 }, () => {
+            const color = Math.floor(Math.random() * 16777215).toString(16);
+            return `#${"0".repeat(6 - color.length)}${color}`;
+        });
+    </script>
+}
+

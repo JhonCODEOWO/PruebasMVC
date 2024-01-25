@@ -30,6 +30,11 @@ namespace PruebasMVC.Controllers
             return View();
         }
 
+        public ActionResult DashBoard()
+        {
+            return View();
+        }
+
         public ActionResult About()
         {
             //ViewBag.Message = "Your application description page.";
@@ -213,6 +218,29 @@ namespace PruebasMVC.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public JsonResult UsuariosConObjetos()
+        {
+            try
+            {
+                List<EN_Graficacion> resultados = new List<EN_Graficacion>();
+                RN_Graficacion graficacion = new RN_Graficacion();
+                resultados = graficacion.UsuariosConObjetos();
+                if (resultados != null)
+                {
+                    return Json(new { success = true, data = resultados }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    return Json(new { success = false, messaje = "Se ha recibido un valor nulo" }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, messaje = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
     }
